@@ -11,17 +11,41 @@ import (
 func main() {
 	maxSize := 8
 
-	c := make(chan Shapes)
-	go func() {
-		NewShape().KeepGrowing(maxSize, c)
-		close(c)
-	}()
-	allShapes := <-c
+	var shapes Shapes
+	// initialShapes = Shapes{}
+	// initialShapes.Add(NewShape())
+	var err error
+	if shapes, err = store.ReadText("results/shapes.txt"); err != nil {
+		shapes = Shapes{}
+		shapes.Add(NewShape())
+	}
+
+	var maxLength int
+	for len := range shapes {
+		if len > maxLength {
+			maxLength = len
+		}
+	}
 
 	wg := sync.WaitGroup{}
-	for len, shapes := range allShapes {
+	wg.Add(len(shapes[maxLength]))
+	c := make(chan Shapes, len(shapes[maxLength]))
+	for _, shape := range shapes[maxLength] {
+		go func(shape *Shape) {
+			shape.KeepGrowing(maxSize, c)
+			wg.Done()
+		}(shape)
+	}
+	wg.Wait()
+	close(c)
+	for s := range c {
+		shapes.Merge(s)
+	}
+
+	wg = sync.WaitGroup{}
+	for len := range shapes {
 		counter := 1
-		for _, shape := range shapes {
+		for _, shape := range shapes[len] {
 			wg.Add(1)
 			go func(shape *Shape, len, counter int) {
 				store.WriteImage(shape, 1024, 1024, fmt.Sprintf("results/shape_%02d_%05d.png", len, counter), 0.85)
@@ -31,5 +55,5 @@ func main() {
 		}
 	}
 	wg.Wait()
-	store.WriteText(allShapes, "results/shapes.txt")
+	store.WriteText(shapes, "results/shapes.txt")
 }

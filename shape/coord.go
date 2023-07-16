@@ -1,6 +1,10 @@
 package shape
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 type Coord [3]int
 
@@ -92,4 +96,27 @@ func (c *Coord) String() string {
 
 func (c *Coord) Equals(other *Coord) bool {
 	return c[XAxis] == other[XAxis] && c[YAxis] == other[YAxis] && c[ZAxis] == other[ZAxis]
+}
+
+func CoordFromString(s string) (*Coord, error) {
+	var ok bool
+	var err error
+	if s, ok = strings.CutPrefix(s, "["); !ok {
+		return nil, fmt.Errorf("coordinate should start with [")
+	}
+	if s, ok = strings.CutSuffix(s, "]"); !ok {
+		return nil, fmt.Errorf("coordinate should end with ]")
+	}
+	fields := strings.Fields(s)
+	result := &Coord{}
+	if result[XAxis], err = strconv.Atoi(fields[XAxis]); err != nil {
+		return nil, err
+	}
+	if result[YAxis], err = strconv.Atoi(fields[YAxis]); err != nil {
+		return nil, err
+	}
+	if result[ZAxis], err = strconv.Atoi(fields[ZAxis]); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

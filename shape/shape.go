@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+const SEPARATOR = ", "
+
 type Shape struct {
 	coords map[Coord]struct{}
 }
@@ -389,5 +391,19 @@ func (s *Shape) String() string {
 	for c := range s.coords {
 		coords = append(coords, c.String())
 	}
-	return strings.Join(coords, ", ")
+	return strings.Join(coords, SEPARATOR)
+}
+
+func ShapeFromString(s string) (*Shape, error) {
+	result := &Shape{coords: make(map[Coord]struct{})}
+	coordStrings := strings.Split(s, SEPARATOR)
+	for _, coordString := range coordStrings {
+		coord, err := CoordFromString(coordString)
+		if err != nil {
+			return nil, err
+		}
+		result.coords[*coord] = struct{}{}
+	}
+
+	return result, nil
 }
