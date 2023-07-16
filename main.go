@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"sync"
 
@@ -9,13 +10,17 @@ import (
 )
 
 func main() {
-	maxSize := 8
+	var maxSize int
+	var fileName string
+	var imagePath string
+	flag.IntVar(&maxSize, "n", 1, "Specify the maximum number of cubes a polycube can consist of. All unique polycubes from 1 to n cubes are calculated.")
+	flag.StringVar(&fileName, "f", "", "File name to read existing polycubes from, new polycubes are written to this file. If no file name is specified no file is used to read from or write to.")
+	flag.StringVar(&imagePath, "i", "", "Path were images should be written, existing images will be overwritten. If not specified no images will be generated")
+	flag.Parse()
 
 	var shapes Shapes
-	// initialShapes = Shapes{}
-	// initialShapes.Add(NewShape())
 	var err error
-	if shapes, err = store.ReadText("results/shapes.txt"); err != nil {
+	if shapes, err = store.ReadText(fileName); err != nil {
 		shapes = Shapes{}
 		shapes.Add(NewShape())
 	}
@@ -42,18 +47,22 @@ func main() {
 		shapes.Merge(s)
 	}
 
-	wg = sync.WaitGroup{}
-	for len := range shapes {
-		counter := 1
-		for _, shape := range shapes[len] {
-			wg.Add(1)
-			go func(shape *Shape, len, counter int) {
-				store.WriteImage(shape, 1024, 1024, fmt.Sprintf("results/shape_%02d_%05d.png", len, counter), 0.85)
-				wg.Done()
-			}(shape, len, counter)
-			counter += 1
+	if imagePath != "" {
+		wg = sync.WaitGroup{}
+		for len := range shapes {
+			counter := 1
+			for _, shape := range shapes[len] {
+				wg.Add(1)
+				go func(shape *Shape, len, counter int) {
+					store.WriteImage(shape, 1024, 1024, fmt.Sprintf("%s/shape_%02d_%05d.png", imagePath, len, counter), 0.85)
+					wg.Done()
+				}(shape, len, counter)
+				counter += 1
+			}
 		}
+		wg.Wait()
 	}
-	wg.Wait()
-	store.WriteText(shapes, "results/shapes.txt")
+	if fileName != "" {
+		store.WriteText(shapes, fileName)
+	}
 }
