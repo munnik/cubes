@@ -2,6 +2,7 @@ package shape
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -381,4 +382,12 @@ func (initialShape *Shape) KeepGrowing(maxLen int, returnChannel chan Shapes) {
 	}
 
 	returnChannel <- result
+}
+
+func (s *Shape) String() string {
+	coords := make([]string, 0)
+	for c := range s.coords {
+		coords = append(coords, c.String())
+	}
+	return strings.Join(coords, ", ")
 }

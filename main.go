@@ -24,11 +24,12 @@ func main() {
 		for _, shape := range shapes {
 			wg.Add(1)
 			go func(shape *Shape, len, counter int) {
-				store.Image(shape, 1024, 1024, fmt.Sprintf("results/shape_%02d_%05d.png", len, counter), 0.85)
+				store.WriteImage(shape, 1024, 1024, fmt.Sprintf("results/shape_%02d_%05d.png", len, counter), 0.85)
 				wg.Done()
 			}(shape, len, counter)
 			counter += 1
 		}
 	}
 	wg.Wait()
+	store.WriteText(allShapes, "results/shapes.txt")
 }

@@ -5,7 +5,7 @@ import (
 	. "github.com/munnik/cubes/shape"
 )
 
-func Image(s *Shape, width, height float64, path string, cubeSize float64) {
+func WriteImage(s *Shape, width, height float64, path string, cubeSize float64) {
 	if cubeSize <= 0 || cubeSize > 1 {
 		cubeSize = 1
 	}
