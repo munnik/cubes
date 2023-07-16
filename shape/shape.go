@@ -48,55 +48,30 @@ func (s *Shape) MustAddCube(c *Coord) *Shape {
 
 // returns all possible new shapes with one cube added to the original shape
 func (s *Shape) Grow() Shapes {
-	grownLength := s.Len() + 1
-	result := make(Shapes, s.Len()*6)
-	result[grownLength] = make(map[string]*Shape)
-	grown := make(map[string]*Shape)
-
-	channel := make(chan *Shape, s.Len()*6)
-	wg := sync.WaitGroup{}
-	wg.Add(s.Len() * 6)
+	newCoords := make(map[Coord]struct{})
 	for c := range s.coords {
+		newCoords[*c.Left()] = struct{}{}
+		newCoords[*c.Right()] = struct{}{}
+		newCoords[*c.Above()] = struct{}{}
+		newCoords[*c.Below()] = struct{}{}
+		newCoords[*c.Before()] = struct{}{}
+		newCoords[*c.Behind()] = struct{}{}
+	}
+	for c := range s.coords {
+		delete(newCoords, c)
+	}
+
+	result := make(Shapes)
+	grownLength := s.Len() + 1
+	numberOfNewShapes := len(newCoords)
+	result[grownLength] = make(map[string]*Shape, numberOfNewShapes)
+	channel := make(chan *Shape, numberOfNewShapes)
+	wg := sync.WaitGroup{}
+	wg.Add(numberOfNewShapes)
+	for c := range newCoords {
 		go func(c Coord) {
-			newShape, err := s.AddCube(c.Left())
-			if err == nil {
-				channel <- newShape
-			}
-			wg.Done()
-		}(c)
-		go func(c Coord) {
-			newShape, err := s.AddCube(c.Right())
-			if err == nil {
-				channel <- newShape
-			}
-			wg.Done()
-		}(c)
-		go func(c Coord) {
-			newShape, err := s.AddCube(c.Above())
-			if err == nil {
-				channel <- newShape
-			}
-			wg.Done()
-		}(c)
-		go func(c Coord) {
-			newShape, err := s.AddCube(c.Below())
-			if err == nil {
-				channel <- newShape
-			}
-			wg.Done()
-		}(c)
-		go func(c Coord) {
-			newShape, err := s.AddCube(c.Before())
-			if err == nil {
-				channel <- newShape
-			}
-			wg.Done()
-		}(c)
-		go func(c Coord) {
-			newShape, err := s.AddCube(c.Behind())
-			if err == nil {
-				channel <- newShape
-			}
+			newShape := s.MustAddCube(&c)
+			channel <- newShape.WithSmallestScore()
 			wg.Done()
 		}(c)
 	}
@@ -104,10 +79,6 @@ func (s *Shape) Grow() Shapes {
 	close(channel)
 
 	for shape := range channel {
-		grown[shape.Score().Hash()] = shape
-	}
-	for _, shape := range grown {
-		shape = shape.WithSmallestScore()
 		result[grownLength][shape.Score().Hash()] = shape
 	}
 
