@@ -47,6 +47,10 @@ func main() {
 		shapes.Merge(s)
 	}
 
+	if fileName != "" {
+		store.WriteText(shapes, fileName)
+	}
+
 	if imagePath != "" {
 		wg = sync.WaitGroup{}
 		for len := range shapes {
@@ -54,15 +58,12 @@ func main() {
 			for _, shape := range shapes[len] {
 				wg.Add(1)
 				go func(shape *Shape, len, counter int) {
-					store.WriteImage(shape, 1024, 1024, fmt.Sprintf("%s/shape_%02d_%05d.png", imagePath, len, counter), 0.85)
+					store.WriteImage(shape, 1024, 1024, fmt.Sprintf("%s/shape_%02d_%015d.png", imagePath, len, counter), 0.85)
 					wg.Done()
 				}(shape, len, counter)
 				counter += 1
 			}
 		}
 		wg.Wait()
-	}
-	if fileName != "" {
-		store.WriteText(shapes, fileName)
 	}
 }
