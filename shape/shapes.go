@@ -1,39 +1,58 @@
 package shape
 
 // Shapes is a map of Shape.Len() to a map of Score.Hash() to *Shape
-type Shapes map[int]map[string]*Shape
+type Shapes struct {
+	s       map[int]map[string]*Shape
+	maxSize int
+}
 
-func NewShapes() Shapes {
-	return make(Shapes)
+func NewShapes() *Shapes {
+	return &Shapes{s: make(map[int]map[string]*Shape)}
 }
 
 func (s Shapes) Len() int {
 	result := 0
-	for index := range s {
-		result += len(s[index])
+	for size := range s.s {
+		result += s.NumberOfShapesWithSize(size)
 	}
 
 	return result
 }
 
 func (s *Shapes) Add(shape *Shape) *Shapes {
-	if _, ok := (*s)[shape.Len()]; !ok {
-		(*s)[shape.Len()] = make(map[string]*Shape)
+	shapeSize := shape.Len()
+	if _, ok := s.s[shapeSize]; !ok {
+		s.s[shapeSize] = make(map[string]*Shape)
+		if shapeSize > s.maxSize {
+			s.maxSize = shapeSize
+		}
 	}
-	(*s)[shape.Len()][shape.String()] = shape
+	s.s[shapeSize][shape.String()] = shape
 
 	return s
 }
 
-func (s *Shapes) Merge(other Shapes) *Shapes {
-	for len := range other {
-		for hash := range other[len] {
-			s.Add(other[len][hash])
+func (s *Shapes) NumberOfShapesWithSize(length int) int {
+	return len(s.s[length])
+}
+
+func (s *Shapes) AllWithSize(size int) map[string]*Shape {
+	if _, ok := s.s[size]; !ok {
+		return map[string]*Shape{}
+	}
+
+	return s.s[size]
+}
+
+func (s *Shapes) Merge(other *Shapes) *Shapes {
+	for size := range other.s {
+		for shapeString := range other.s[size] {
+			s.Add(other.s[size][shapeString])
 		}
 	}
 	return s
 }
 
-func (s *Shapes) NumberOfShapesWithLength(length int) int {
-	return len((*s)[length])
+func (s *Shapes) MaxSize() int {
+	return s.maxSize
 }

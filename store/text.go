@@ -8,21 +8,21 @@ import (
 	. "github.com/munnik/cubes/shape"
 )
 
-func WriteText(s Shapes, path string) {
+func WriteText(s *Shapes, path string) {
 	f, err := os.Create(path)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	for len := range s {
-		for _, shape := range s[len] {
+	for size := 1; size <= s.MaxSize(); size++ {
+		for _, shape := range s.AllWithSize(size) {
 			fmt.Fprintln(f, shape)
 		}
 	}
 }
 
-func ReadText(path string) (Shapes, error) {
+func ReadText(path string) (*Shapes, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -35,9 +35,6 @@ func ReadText(path string) (Shapes, error) {
 		shape, err := ShapeFromString(scanner.Text())
 		if err != nil {
 			return nil, err
-		}
-		if _, ok := result[shape.Len()]; !ok {
-			result[shape.Len()] = make(map[string]*Shape)
 		}
 		result.Add(shape)
 	}

@@ -51,7 +51,7 @@ func (s *Shape) MustAddCube(c *Coord) *Shape {
 }
 
 // returns all possible new shapes with one cube added to the original shape
-func (s *Shape) Grow() Shapes {
+func (s *Shape) Grow() *Shapes {
 	newCoords := make(map[Coord]struct{})
 	for c := range s.coords {
 		newCoords[*c.Left()] = struct{}{}
@@ -66,9 +66,7 @@ func (s *Shape) Grow() Shapes {
 	}
 
 	result := NewShapes()
-	grownLength := s.Len() + 1
 	numberOfNewShapes := len(newCoords)
-	result[grownLength] = make(map[string]*Shape, numberOfNewShapes)
 	channel := make(chan *Shape, numberOfNewShapes)
 	wg := sync.WaitGroup{}
 	wg.Add(numberOfNewShapes)
@@ -367,10 +365,10 @@ func (initialShape *Shape) KeepGrowing(maxLen int, returnChannel chan Shapes) {
 
 	grown := initialShape.Grow()
 
-	requestChannel := make(chan Shapes, len(grown[initialShape.Len()+1]))
+	requestChannel := make(chan Shapes, grown.NumberOfShapesWithSize(grown.maxSize))
 	wg := sync.WaitGroup{}
-	wg.Add(len(grown[initialShape.Len()+1]))
-	for _, shape := range grown[initialShape.Len()+1] {
+	wg.Add(grown.NumberOfShapesWithSize(grown.maxSize))
+	for _, shape := range grown.AllWithSize(grown.maxSize) {
 		func(s *Shape) {
 			defer wg.Done()
 			s.KeepGrowing(maxLen, requestChannel)
@@ -380,10 +378,10 @@ func (initialShape *Shape) KeepGrowing(maxLen int, returnChannel chan Shapes) {
 	close(requestChannel)
 
 	for m := range requestChannel {
-		result.Merge(m)
+		result.Merge(&m)
 	}
 
-	returnChannel <- result
+	returnChannel <- *result
 }
 
 func (s *Shape) String() string {
