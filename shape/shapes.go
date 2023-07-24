@@ -19,8 +19,12 @@ func (s Shapes) Len() int {
 	return result
 }
 
+func (s *Shapes) NumberOfShapesWithSize(length int) int {
+	return len(s.s[length])
+}
+
 func (s *Shapes) Add(shape *Shape) *Shapes {
-	shapeSize := shape.Len()
+	shapeSize := shape.Size()
 	if _, ok := s.s[shapeSize]; !ok {
 		s.s[shapeSize] = make(map[string]*Shape)
 		if shapeSize > s.maxSize {
@@ -32,11 +36,7 @@ func (s *Shapes) Add(shape *Shape) *Shapes {
 	return s
 }
 
-func (s *Shapes) NumberOfShapesWithSize(length int) int {
-	return len(s.s[length])
-}
-
-func (s *Shapes) AllWithSize(size int) map[string]*Shape {
+func (s *Shapes) GetAllWithSize(size int) map[string]*Shape {
 	if _, ok := s.s[size]; !ok {
 		return map[string]*Shape{}
 	}

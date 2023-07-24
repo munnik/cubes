@@ -16,7 +16,7 @@ func WriteText(s *Shapes, path string) {
 	defer f.Close()
 
 	for size := 1; size <= s.MaxSize(); size++ {
-		for _, shape := range s.AllWithSize(size) {
+		for _, shape := range s.GetAllWithSize(size) {
 			fmt.Fprintln(f, shape)
 		}
 	}

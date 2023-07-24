@@ -19,8 +19,8 @@ func NewShape() *Shape {
 	}
 }
 
-// Len is the number of cubes in the collection.
-func (s *Shape) Len() int { return len(s.coords) }
+// Size is the number of cubes in the collection.
+func (s *Shape) Size() int { return len(s.coords) }
 
 func (s *Shape) AddCube(c *Coord) (*Shape, error) {
 	if _, ok := s.coords[*c]; ok {
@@ -32,7 +32,7 @@ func (s *Shape) AddCube(c *Coord) (*Shape, error) {
 	}
 
 	result := NewShape()
-	result.coords = make(map[Coord]struct{}, s.Len()+1)
+	result.coords = make(map[Coord]struct{}, s.Size()+1)
 	for c := range s.coords {
 		result.coords[c] = struct{}{}
 	}
@@ -100,7 +100,7 @@ func (s *Shape) IsNeighbor(c *Coord) bool {
 }
 
 func (s *Shape) Coords() []Coord {
-	result := make([]Coord, 0, s.Len())
+	result := make([]Coord, 0, s.Size())
 	for c := range s.coords {
 		result = append(result, c)
 	}
@@ -110,7 +110,7 @@ func (s *Shape) Coords() []Coord {
 
 func (s *Shape) Transform(f func(Coord, Axis) (*Coord, error), axis Axis) (*Shape, error) {
 	result := NewShape()
-	result.coords = make(map[Coord]struct{}, s.Len())
+	result.coords = make(map[Coord]struct{}, s.Size())
 
 	for c := range s.coords {
 		newCoord, err := f(c, axis)
@@ -189,7 +189,7 @@ func (s *Shape) AllPositiveCoords() *Shape {
 	min, _ := s.BoundingBox()
 
 	result := NewShape()
-	result.coords = make(map[Coord]struct{}, s.Len())
+	result.coords = make(map[Coord]struct{}, s.Size())
 
 	for c := range s.coords {
 		newCoord := Coord{
@@ -206,7 +206,7 @@ func (s *Shape) AllPositiveCoords() *Shape {
 func (s *Shape) Score() Score {
 	result := make(Score, 0)
 	var index uint64
-	size := s.Len()
+	size := s.Size()
 	sizeSquared := size * size
 
 	for c := range s.AllPositiveCoords().coords {
@@ -235,127 +235,125 @@ func (s *Shape) WithSmallestScore() *Shape {
 	// RTTTRTTTRTTT
 
 	result := s
-	newShape := s
+	turnedShape := s
 
 	// RTTT
-	newShape = newShape.MustRotate(XAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(XAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-
-	// RTTT
-	newShape = newShape.MustRotate(XAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
 
 	// RTTT
-	newShape = newShape.MustRotate(XAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(XAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+
+	// RTTT
+	turnedShape = turnedShape.MustRotate(XAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
 
 	// RTR
-	newShape = newShape.MustRotate(XAxis)
-	newShape = newShape.MustRotate(YAxis)
-	newShape = newShape.MustRotate(XAxis)
+	turnedShape = turnedShape.MustRotate(XAxis).MustRotate(YAxis).MustRotate(XAxis)
 
 	// RTTT
-	newShape = newShape.MustRotate(XAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(XAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-
-	// RTTT
-	newShape = newShape.MustRotate(XAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
-	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
 
 	// RTTT
-	newShape = newShape.MustRotate(XAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(XAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
-	newShape = newShape.MustRotate(YAxis)
-	if result.Cmp(newShape) < 0 {
-		result = newShape
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+
+	// RTTT
+	turnedShape = turnedShape.MustRotate(XAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
+	}
+	turnedShape = turnedShape.MustRotate(YAxis)
+	if result.Cmp(turnedShape) < 0 {
+		result = turnedShape
 	}
 
 	return result.AllPositiveCoords()
 }
 
 // KeepGrowing returns all unique shapes starting from the initial Shape until the shapes reach the specified maxLen
-func (initialShape *Shape) KeepGrowing(maxLen int, returnChannel chan Shapes) {
-	if initialShape.Len() > maxLen {
+func (initialShape *Shape) KeepGrowing(maxSize int, returnChannel chan Shapes) {
+	if initialShape.Size() > maxSize {
 		return
 	}
 
@@ -368,10 +366,10 @@ func (initialShape *Shape) KeepGrowing(maxLen int, returnChannel chan Shapes) {
 	requestChannel := make(chan Shapes, grown.NumberOfShapesWithSize(grown.maxSize))
 	wg := sync.WaitGroup{}
 	wg.Add(grown.NumberOfShapesWithSize(grown.maxSize))
-	for _, shape := range grown.AllWithSize(grown.maxSize) {
+	for _, shape := range grown.GetAllWithSize(grown.maxSize) {
 		func(s *Shape) {
 			defer wg.Done()
-			s.KeepGrowing(maxLen, requestChannel)
+			s.KeepGrowing(maxSize, requestChannel)
 		}(shape)
 	}
 	wg.Wait()

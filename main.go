@@ -30,7 +30,7 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(shapes.NumberOfShapesWithSize(currentMaxSize))
 	c := make(chan Shapes, shapes.NumberOfShapesWithSize(currentMaxSize))
-	for _, shape := range shapes.AllWithSize(currentMaxSize) {
+	for _, shape := range shapes.GetAllWithSize(currentMaxSize) {
 		go func(shape *Shape) {
 			shape.KeepGrowing(maxSize, c)
 			wg.Done()
@@ -50,7 +50,7 @@ func main() {
 		wg = sync.WaitGroup{}
 		for size := 1; size <= maxSize; size++ {
 			counter := 1
-			for _, shape := range shapes.AllWithSize(size) {
+			for _, shape := range shapes.GetAllWithSize(size) {
 				wg.Add(1)
 				go func(shape *Shape, size, counter int) {
 					store.WriteImage(shape, 1024, 1024, fmt.Sprintf("%s/shape_%02d_%015d.png", imagePath, size, counter), 0.85)
