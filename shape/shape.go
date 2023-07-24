@@ -12,8 +12,12 @@ const SEPARATOR = ", "
 type Shape struct {
 	coords            map[Coord]struct{}
 	allPositiveCoords bool
-	hash              *Hash
 	score             *Score
+}
+
+type BoundingBox struct {
+	Min Coord
+	Max Coord
 }
 
 func NewShape() *Shape {
@@ -57,12 +61,12 @@ func (s *Shape) MustAddCube(c *Coord) *Shape {
 func (s *Shape) Grow() *Shapes {
 	newCoords := make(map[Coord]struct{})
 	for c := range s.coords {
-		newCoords[*c.Left()] = struct{}{}
-		newCoords[*c.Right()] = struct{}{}
-		newCoords[*c.Above()] = struct{}{}
-		newCoords[*c.Below()] = struct{}{}
-		newCoords[*c.Before()] = struct{}{}
-		newCoords[*c.Behind()] = struct{}{}
+		newCoords[c.Left()] = struct{}{}
+		newCoords[c.Right()] = struct{}{}
+		newCoords[c.Above()] = struct{}{}
+		newCoords[c.Below()] = struct{}{}
+		newCoords[c.Before()] = struct{}{}
+		newCoords[c.Behind()] = struct{}{}
 	}
 	for c := range s.coords {
 		delete(newCoords, c)
@@ -93,7 +97,7 @@ func (s *Shape) Grow() *Shapes {
 func (s *Shape) IsNeighbor(c *Coord) bool {
 	for existing := range s.coords {
 		for neighbor := range existing.Neighbors() {
-			if c.Equals(neighbor) {
+			if c.Equals(&neighbor) {
 				return true
 			}
 		}
@@ -171,7 +175,7 @@ func (s *Shape) MustMirror(axis Axis) *Shape {
 	return result
 }
 
-func (s *Shape) BoundingBox() (*Coord, *Coord) {
+func (s *Shape) BoundingBox() BoundingBox {
 	var min, max Coord
 
 	for _, c := range s.Coords() {
@@ -185,7 +189,10 @@ func (s *Shape) BoundingBox() (*Coord, *Coord) {
 		}
 	}
 
-	return &min, &max
+	return BoundingBox{
+		Min: min,
+		Max: max,
+	}
 }
 
 func (s *Shape) AllPositiveCoords() *Shape {
@@ -193,18 +200,13 @@ func (s *Shape) AllPositiveCoords() *Shape {
 		return s
 	}
 
-	min, _ := s.BoundingBox()
+	min := s.BoundingBox().Min
 
 	result := NewShape()
 	result.coords = make(map[Coord]struct{}, s.Size())
 
 	for c := range s.coords {
-		newCoord := Coord{
-			c[XAxis] - min[XAxis],
-			c[YAxis] - min[YAxis],
-			c[ZAxis] - min[ZAxis],
-		}
-		result.coords[newCoord] = struct{}{}
+		result.coords[*c.Subtract(&min)] = struct{}{}
 	}
 
 	result.allPositiveCoords = true
@@ -212,35 +214,11 @@ func (s *Shape) AllPositiveCoords() *Shape {
 }
 
 func (s *Shape) Score() Score {
-	if s.score != nil {
-		return *s.score
+	if s.score == nil {
+		s.score = NewScore(s)
 	}
 
-	result := make(Score, 0)
-	var index uint64
-	size := s.Size()
-	sizeSquared := size * size
-
-	for c := range s.AllPositiveCoords().coords {
-		index = uint64(c[XAxis]) + uint64(c[YAxis]*size) + uint64(c[ZAxis]*sizeSquared)
-		result[index] = true
-	}
-
-	s.score = &result
-	return result
-}
-
-func (s *Shape) Hash() Hash {
-	if s.hash != nil {
-		return *s.hash
-	}
-
-	result := Hash{}
-	for k, v := range s.Score().SortIndices() {
-		result[k] = v
-	}
-	s.hash = &result
-	return result
+	return *s.score
 }
 
 // true if s is equal to other

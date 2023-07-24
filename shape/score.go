@@ -4,46 +4,49 @@ import (
 	"sort"
 )
 
-type Score map[uint64]bool
+const (
+	MAX_NUMBER_OF_CUBES = 17
+)
+
+type Score [MAX_NUMBER_OF_CUBES]uint64
+
+func NewScore(s *Shape) *Score {
+	result := &Score{}
+	size := s.Size()
+	sizeSquared := size * size
+
+	index := 0
+	for c := range s.AllPositiveCoords().coords {
+		result[index] = uint64(c[XAxis]) + uint64(c[YAxis]*size) + uint64(c[ZAxis]*sizeSquared) + 1
+		index++
+	}
+
+	sort.Sort(result)
+
+	return result
+}
+
+func (s Score) Len() int {
+	return len(s)
+}
+
+func (s Score) Less(i, j int) bool {
+	return s[i] < s[j]
+}
+
+func (s *Score) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
 
 // Compare s to other, return -1 if left is smaller than right, 0 if left is equal to right and 1 if left is bigger than right
 func (left Score) Cmp(right Score) int {
-	leftIndices := left.SortIndices()
-	rightIndices := right.SortIndices()
-	var leftIndex, rightIndex uint64
-
-	for len(leftIndices) > 0 && len(rightIndices) > 0 {
-		leftIndex = leftIndices[len(leftIndices)-1]
-		rightIndex = rightIndices[len(leftIndices)-1]
-
-		if leftIndex > rightIndex {
-			return 1
-		}
-		if leftIndex < rightIndex {
+	for index := 0; index < MAX_NUMBER_OF_CUBES; index++ {
+		if left[index] < right[index] {
 			return -1
 		}
-
-		leftIndices = leftIndices[:len(leftIndices)-1]
-		rightIndices = rightIndices[:len(rightIndices)-1]
-	}
-
-	if len(leftIndices) > 0 {
-		return 1
-	}
-	if len(rightIndices) > 0 {
-		return -1
-	}
-
-	return 0
-}
-
-func (s Score) SortIndices() []uint64 {
-	indices := make([]uint64, 0, len(s))
-	for index, value := range s {
-		if value {
-			indices = append(indices, index)
+		if left[index] > right[index] {
+			return 1
 		}
 	}
-	sort.Slice(indices, func(i, j int) bool { return indices[i] < indices[j] })
-	return indices
+	return 0
 }

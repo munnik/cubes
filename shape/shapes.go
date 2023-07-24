@@ -1,19 +1,14 @@
 package shape
 
-const (
-	HASH_SIZE = 17
-)
-
 type (
-	Hash   [HASH_SIZE]uint64
 	Shapes struct {
-		s       map[int]map[Hash]*Shape
+		s       map[int]map[Score]*Shape
 		maxSize int
 	}
 )
 
 func NewShapes() *Shapes {
-	return &Shapes{s: make(map[int]map[Hash]*Shape)}
+	return &Shapes{s: make(map[int]map[Score]*Shape)}
 }
 
 func (s Shapes) Len() int {
@@ -32,12 +27,12 @@ func (s *Shapes) NumberOfShapesWithSize(length int) int {
 func (s *Shapes) Add(shape *Shape) *Shapes {
 	shapeSize := shape.Size()
 	if _, ok := s.s[shapeSize]; !ok {
-		s.s[shapeSize] = make(map[Hash]*Shape)
+		s.s[shapeSize] = make(map[Score]*Shape)
 		if shapeSize > s.maxSize {
 			s.maxSize = shapeSize
 		}
 	}
-	s.s[shapeSize][shape.Hash()] = shape
+	s.s[shapeSize][shape.Score()] = shape
 
 	return s
 }
@@ -48,13 +43,13 @@ func (s *Shapes) Exists(shape *Shape) bool {
 		return false
 	}
 
-	_, ok := s.s[shapeSize][shape.Hash()]
+	_, ok := s.s[shapeSize][shape.Score()]
 	return ok
 }
 
-func (s *Shapes) GetAllWithSize(size int) map[Hash]*Shape {
+func (s *Shapes) GetAllWithSize(size int) map[Score]*Shape {
 	if _, ok := s.s[size]; !ok {
-		return map[Hash]*Shape{}
+		return map[Score]*Shape{}
 	}
 
 	return s.s[size]

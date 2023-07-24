@@ -29,7 +29,7 @@ func WriteImage(s *Shape, width, height float64, path string, cubeSize float64) 
 	}
 
 	// define camera parameters
-	_, max := s.BoundingBox()
+	max := s.BoundingBox().Max
 	max = max.Left().Above().Before().Left().Above().Before()
 	eye := ln.Vector{
 		X: (float64)(max[XAxis]) * 1.5,

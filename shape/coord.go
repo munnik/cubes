@@ -8,28 +8,28 @@ import (
 
 type Coord [3]int
 
-func (c *Coord) Left() *Coord {
-	return &Coord{c[XAxis] + 1, c[YAxis], c[ZAxis]}
+func (c Coord) Left() Coord {
+	return Coord{c[XAxis] + 1, c[YAxis], c[ZAxis]}
 }
 
-func (c *Coord) Right() *Coord {
-	return &Coord{c[XAxis] - 1, c[YAxis], c[ZAxis]}
+func (c Coord) Right() Coord {
+	return Coord{c[XAxis] - 1, c[YAxis], c[ZAxis]}
 }
 
-func (c *Coord) Above() *Coord {
-	return &Coord{c[XAxis], c[YAxis] + 1, c[ZAxis]}
+func (c Coord) Above() Coord {
+	return Coord{c[XAxis], c[YAxis] + 1, c[ZAxis]}
 }
 
-func (c *Coord) Below() *Coord {
-	return &Coord{c[XAxis], c[YAxis] - 1, c[ZAxis]}
+func (c Coord) Below() Coord {
+	return Coord{c[XAxis], c[YAxis] - 1, c[ZAxis]}
 }
 
-func (c *Coord) Before() *Coord {
-	return &Coord{c[XAxis], c[YAxis], c[ZAxis] + 1}
+func (c Coord) Before() Coord {
+	return Coord{c[XAxis], c[YAxis], c[ZAxis] + 1}
 }
 
-func (c *Coord) Behind() *Coord {
-	return &Coord{c[XAxis], c[YAxis], c[ZAxis] - 1}
+func (c Coord) Behind() Coord {
+	return Coord{c[XAxis], c[YAxis], c[ZAxis] - 1}
 }
 
 // 90 degrees rotation around the specified axis
@@ -78,8 +78,8 @@ func (c *Coord) MustMirror(axis Axis) *Coord {
 	return result
 }
 
-func (c *Coord) Neighbors() map[*Coord]struct{} {
-	result := make(map[*Coord]struct{}, 6)
+func (c *Coord) Neighbors() map[Coord]struct{} {
+	result := make(map[Coord]struct{}, 6)
 	result[c.Left()] = struct{}{}
 	result[c.Right()] = struct{}{}
 	result[c.Above()] = struct{}{}
@@ -96,6 +96,14 @@ func (c *Coord) String() string {
 
 func (c *Coord) Equals(other *Coord) bool {
 	return c[XAxis] == other[XAxis] && c[YAxis] == other[YAxis] && c[ZAxis] == other[ZAxis]
+}
+
+func (c *Coord) Subtract(other *Coord) *Coord {
+	return &Coord{
+		c[XAxis] - other[XAxis],
+		c[YAxis] - other[YAxis],
+		c[ZAxis] - other[ZAxis],
+	}
 }
 
 func CoordFromString(s string) (*Coord, error) {
