@@ -33,8 +33,8 @@ func main() {
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(len(shapes[maxLength]))
-	c := make(chan Shapes, len(shapes[maxLength]))
+	wg.Add(shapes.NumberOfShapesWithLength(maxLength))
+	c := make(chan Shapes, shapes.NumberOfShapesWithLength(maxLength))
 	for _, shape := range shapes[maxLength] {
 		go func(shape *Shape) {
 			shape.KeepGrowing(maxSize, c)

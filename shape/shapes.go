@@ -33,3 +33,7 @@ func (s *Shapes) Merge(other Shapes) *Shapes {
 	}
 	return s
 }
+
+func (s *Shapes) NumberOfShapesWithLength(length int) int {
+	return len((*s)[length])
+}
