@@ -10,7 +10,8 @@ import (
 const SEPARATOR = ", "
 
 type Shape struct {
-	coords map[Coord]struct{}
+	coords            map[Coord]struct{}
+	allPositiveCoords bool
 }
 
 func NewShape() *Shape {
@@ -186,6 +187,10 @@ func (s *Shape) BoundingBox() (*Coord, *Coord) {
 }
 
 func (s *Shape) AllPositiveCoords() *Shape {
+	if s.allPositiveCoords {
+		return s
+	}
+
 	min, _ := s.BoundingBox()
 
 	result := NewShape()
@@ -200,6 +205,7 @@ func (s *Shape) AllPositiveCoords() *Shape {
 		result.coords[newCoord] = struct{}{}
 	}
 
+	result.allPositiveCoords = true
 	return result
 }
 
