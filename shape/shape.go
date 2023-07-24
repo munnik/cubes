@@ -12,6 +12,8 @@ const SEPARATOR = ", "
 type Shape struct {
 	coords            map[Coord]struct{}
 	allPositiveCoords bool
+	hash              *Hash
+	score             *Score
 }
 
 func NewShape() *Shape {
@@ -210,6 +212,10 @@ func (s *Shape) AllPositiveCoords() *Shape {
 }
 
 func (s *Shape) Score() Score {
+	if s.score != nil {
+		return *s.score
+	}
+
 	result := make(Score, 0)
 	var index uint64
 	size := s.Size()
@@ -220,6 +226,20 @@ func (s *Shape) Score() Score {
 		result[index] = true
 	}
 
+	s.score = &result
+	return result
+}
+
+func (s *Shape) Hash() Hash {
+	if s.hash != nil {
+		return *s.hash
+	}
+
+	result := Hash{}
+	for k, v := range s.Score().SortIndices() {
+		result[k] = v
+	}
+	s.hash = &result
 	return result
 }
 

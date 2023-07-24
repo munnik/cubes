@@ -1,13 +1,19 @@
 package shape
 
-// Shapes is a map of Shape.Len() to a map of Score.Hash() to *Shape
-type Shapes struct {
-	s       map[int]map[string]*Shape
-	maxSize int
-}
+const (
+	HASH_SIZE = 17
+)
+
+type (
+	Hash   [HASH_SIZE]uint64
+	Shapes struct {
+		s       map[int]map[Hash]*Shape
+		maxSize int
+	}
+)
 
 func NewShapes() *Shapes {
-	return &Shapes{s: make(map[int]map[string]*Shape)}
+	return &Shapes{s: make(map[int]map[Hash]*Shape)}
 }
 
 func (s Shapes) Len() int {
@@ -26,19 +32,29 @@ func (s *Shapes) NumberOfShapesWithSize(length int) int {
 func (s *Shapes) Add(shape *Shape) *Shapes {
 	shapeSize := shape.Size()
 	if _, ok := s.s[shapeSize]; !ok {
-		s.s[shapeSize] = make(map[string]*Shape)
+		s.s[shapeSize] = make(map[Hash]*Shape)
 		if shapeSize > s.maxSize {
 			s.maxSize = shapeSize
 		}
 	}
-	s.s[shapeSize][shape.String()] = shape
+	s.s[shapeSize][shape.Hash()] = shape
 
 	return s
 }
 
-func (s *Shapes) GetAllWithSize(size int) map[string]*Shape {
+func (s *Shapes) Exists(shape *Shape) bool {
+	shapeSize := shape.Size()
+	if _, ok := s.s[shapeSize]; !ok {
+		return false
+	}
+
+	_, ok := s.s[shapeSize][shape.Hash()]
+	return ok
+}
+
+func (s *Shapes) GetAllWithSize(size int) map[Hash]*Shape {
 	if _, ok := s.s[size]; !ok {
-		return map[string]*Shape{}
+		return map[Hash]*Shape{}
 	}
 
 	return s.s[size]
