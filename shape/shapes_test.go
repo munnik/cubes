@@ -7,7 +7,7 @@ import (
 )
 
 func TestAdd(t *testing.T) {
-	shapes := make(Shapes)
+	shapes := NewShapes()
 
 	s1 := NewShape().MustAddCube(&Coord{1, 0, 0}).MustAddCube(&Coord{2, 0, 0})
 	s2 := NewShape().MustAddCube(&Coord{1, 0, 0}).MustAddCube(&Coord{0, 1, 0})
@@ -21,8 +21,8 @@ func TestAdd(t *testing.T) {
 }
 
 func TestMerge(t *testing.T) {
-	shapes1 := make(Shapes)
-	shapes2 := make(Shapes)
+	shapes1 := NewShapes()
+	shapes2 := NewShapes()
 
 	s1 := NewShape().MustAddCube(&Coord{1, 0, 0}).MustAddCube(&Coord{2, 0, 0})
 	s2 := NewShape().MustAddCube(&Coord{1, 0, 0}).MustAddCube(&Coord{0, 1, 0})

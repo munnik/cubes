@@ -29,7 +29,7 @@ func ReadText(path string) (Shapes, error) {
 	}
 	defer f.Close()
 
-	result := make(Shapes)
+	result := NewShapes()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		shape, err := ShapeFromString(scanner.Text())
@@ -39,7 +39,7 @@ func ReadText(path string) (Shapes, error) {
 		if _, ok := result[shape.Len()]; !ok {
 			result[shape.Len()] = make(map[string]*Shape)
 		}
-		result[shape.Len()][shape.Score().Hash()] = shape
+		result.Add(shape)
 	}
 
 	if err := scanner.Err(); err != nil {

@@ -1,8 +1,6 @@
 package shape
 
 import (
-	"crypto/sha256"
-	"encoding/binary"
 	"sort"
 )
 
@@ -39,22 +37,12 @@ func (left Score) Cmp(right Score) int {
 	return 0
 }
 
-func (s Score) Hash() string {
-	b := make([]byte, 8)
-	h := sha256.New()
-	indices := s.SortIndices()
-
-	for _, index := range indices {
-		binary.LittleEndian.PutUint64(b, index)
-		h.Write(b)
-	}
-	return (string)(h.Sum(nil))
-}
-
 func (s Score) SortIndices() []uint64 {
 	indices := make([]uint64, 0, len(s))
-	for index := range s {
-		indices = append(indices, index)
+	for index, value := range s {
+		if value {
+			indices = append(indices, index)
+		}
 	}
 	sort.Slice(indices, func(i, j int) bool { return indices[i] < indices[j] })
 	return indices

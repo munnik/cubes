@@ -2,6 +2,7 @@ package shape
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -64,7 +65,7 @@ func (s *Shape) Grow() Shapes {
 		delete(newCoords, c)
 	}
 
-	result := make(Shapes)
+	result := NewShapes()
 	grownLength := s.Len() + 1
 	numberOfNewShapes := len(newCoords)
 	result[grownLength] = make(map[string]*Shape, numberOfNewShapes)
@@ -82,7 +83,7 @@ func (s *Shape) Grow() Shapes {
 	close(channel)
 
 	for shape := range channel {
-		result[grownLength][shape.Score().Hash()] = shape
+		result.Add(shape)
 	}
 
 	return result
@@ -361,9 +362,8 @@ func (initialShape *Shape) KeepGrowing(maxLen int, returnChannel chan Shapes) {
 	}
 
 	smallestScore := initialShape.WithSmallestScore()
-	result := make(Shapes)
-	result[smallestScore.Len()] = make(map[string]*Shape)
-	result[smallestScore.Len()][smallestScore.Score().Hash()] = smallestScore
+	result := NewShapes()
+	result.Add(smallestScore)
 
 	grown := initialShape.Grow()
 
@@ -391,6 +391,7 @@ func (s *Shape) String() string {
 	for c := range s.coords {
 		coords = append(coords, c.String())
 	}
+	sort.Strings(coords)
 	return strings.Join(coords, SEPARATOR)
 }
 
