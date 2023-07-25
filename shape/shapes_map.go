@@ -12,14 +12,10 @@ func NewShapesMap() *ShapesMap {
 func (s ShapesMap) Len() int {
 	result := 0
 	for size := range s.s {
-		result += s.NumberOfShapesMapWithSize(size)
+		result += len(s.s[size])
 	}
 
 	return result
-}
-
-func (s *ShapesMap) NumberOfShapesMapWithSize(size ShapeSize) int {
-	return len(s.s[size])
 }
 
 func (s *ShapesMap) Add(shape Shape) Shapes {
