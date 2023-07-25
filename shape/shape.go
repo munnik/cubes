@@ -2,7 +2,6 @@ package shape
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 	"sync"
 )
@@ -389,15 +388,6 @@ func (initialShape *Shape) KeepGrowing(maxSize ShapeSize, returnChannel chan Sha
 	}
 
 	returnChannel <- result
-}
-
-func (s *Shape) String() string {
-	coords := make([]string, 0)
-	for c := range s.coords {
-		coords = append(coords, c.String())
-	}
-	sort.Strings(coords)
-	return strings.Join(coords, SEPARATOR)
 }
 
 func ShapeFromString(s string) (*Shape, error) {
