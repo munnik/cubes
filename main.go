@@ -17,13 +17,13 @@ func main() {
 	flag.IntVar(&maxSize, "n", 1, "Specify the maximum number of cubes a polycube can consist of. All unique polycubes from 1 to n cubes are calculated.")
 	flag.StringVar(&fileName, "f", "", "File name to read existing polycubes from, new polycubes are written to this file. If no file name is specified no file is used to read from or write to.")
 	flag.StringVar(&imagePath, "i", "", "Path were images should be written, existing images will be overwritten. If not specified no images will be generated")
-	flag.StringVar(&method, "m", "DefaultMap", "Method to use to create a set of all the shapes created. Options are DefaultMap and LongestStraight.")
+	flag.StringVar(&method, "m", "DefaultMap", "Method to use to create a set of all the shapes created. Options are DefaultMap and LongestStraightMap.")
 	flag.Parse()
 
 	var NewShapes func() Shapes
 	if method == "DefaultMap" {
 		NewShapes = NewShapesDefaultMap
-	} else if method == "LongestStraight" {
+	} else if method == "LongestStraightMap" {
 		NewShapes = NewShapesLongestStraightMap
 	} else {
 		panic("Unknown method specified")
