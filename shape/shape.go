@@ -2,6 +2,7 @@ package shape
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -111,6 +112,50 @@ func (s *Shape) Coords() []Coord {
 	result := make([]Coord, 0, s.Size())
 	for c := range s.coords {
 		result = append(result, c)
+	}
+
+	return result
+}
+
+func (s *Shape) LongestStraight() int {
+	result := 0
+
+	for _, c := range s.Coords() {
+		straight := 0
+		isNextIn := true
+		next := c
+		for isNextIn {
+			straight++
+			next = next.Right()
+			_, isNextIn = s.coords[next]
+		}
+		if straight > result {
+			result = straight
+		}
+
+		straight = 0
+		isNextIn = true
+		next = c
+		for isNextIn {
+			straight++
+			next = next.Above()
+			_, isNextIn = s.coords[next]
+		}
+		if straight > result {
+			result = straight
+		}
+
+		straight = 0
+		isNextIn = true
+		next = c
+		for isNextIn {
+			straight++
+			next = next.Before()
+			_, isNextIn = s.coords[next]
+		}
+		if straight > result {
+			result = straight
+		}
 	}
 
 	return result
@@ -388,6 +433,15 @@ func (initialShape *Shape) KeepGrowing(maxSize ShapeSize, returnChannel chan Sha
 	}
 
 	returnChannel <- result
+}
+
+func (s *Shape) String() string {
+	coords := make([]string, 0)
+	for c := range s.coords {
+		coords = append(coords, c.String())
+	}
+	sort.Strings(coords)
+	return strings.Join(coords, SEPARATOR)
 }
 
 func ShapeFromString(s string) (*Shape, error) {
