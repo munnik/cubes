@@ -15,6 +15,8 @@ type Shape struct {
 	score             *Score
 }
 
+type ShapeSize int
+
 type BoundingBox struct {
 	Min Coord
 	Max Coord
@@ -27,7 +29,7 @@ func NewShape() *Shape {
 }
 
 // Size is the number of cubes in the collection.
-func (s *Shape) Size() int { return len(s.coords) }
+func (s *Shape) Size() ShapeSize { return (ShapeSize)(len(s.coords)) }
 
 func (s *Shape) AddCube(c *Coord) (*Shape, error) {
 	if _, ok := s.coords[*c]; ok {
@@ -58,7 +60,7 @@ func (s *Shape) MustAddCube(c *Coord) *Shape {
 }
 
 // returns all possible new shapes with one cube added to the original shape
-func (s *Shape) Grow() *Shapes {
+func (s *Shape) Grow() Shapes {
 	newCoords := make(map[Coord]struct{})
 	for c := range s.coords {
 		newCoords[c.Left()] = struct{}{}
@@ -72,7 +74,7 @@ func (s *Shape) Grow() *Shapes {
 		delete(newCoords, c)
 	}
 
-	result := NewShapes()
+	result := NewShapesMap()
 	numberOfNewShapes := len(newCoords)
 	channel := make(chan *Shape, numberOfNewShapes)
 	wg := sync.WaitGroup{}
@@ -88,7 +90,7 @@ func (s *Shape) Grow() *Shapes {
 	close(channel)
 
 	for shape := range channel {
-		result.Add(shape)
+		result.Add(*shape)
 	}
 
 	return result
@@ -223,6 +225,9 @@ func (s *Shape) Score() Score {
 
 // true if s is equal to other
 func (s *Shape) Equals(other *Shape) bool {
+	if s.Size() != other.Size() {
+		return false
+	}
 	return s.Cmp(other) == 0
 }
 
@@ -356,21 +361,21 @@ func (s *Shape) WithSmallestScore() *Shape {
 }
 
 // KeepGrowing returns all unique shapes starting from the initial Shape until the shapes reach the specified maxLen
-func (initialShape *Shape) KeepGrowing(maxSize int, returnChannel chan Shapes) {
+func (initialShape *Shape) KeepGrowing(maxSize ShapeSize, returnChannel chan Shapes) {
 	if initialShape.Size() > maxSize {
 		return
 	}
 
-	smallestScore := initialShape.WithSmallestScore()
-	result := NewShapes()
-	result.Add(smallestScore)
+	smallestScoreShape := initialShape.WithSmallestScore()
+	result := NewShapesMap()
+	result.Add(*smallestScoreShape)
 
-	grown := initialShape.Grow()
+	grown := initialShape.Grow().GetAllWithSize(initialShape.Size() + 1)
 
-	requestChannel := make(chan Shapes, grown.NumberOfShapesWithSize(grown.maxSize))
+	requestChannel := make(chan Shapes, len(grown))
 	wg := sync.WaitGroup{}
-	wg.Add(grown.NumberOfShapesWithSize(grown.maxSize))
-	for _, shape := range grown.GetAllWithSize(grown.maxSize) {
+	wg.Add(len(grown))
+	for _, shape := range grown {
 		func(s *Shape) {
 			defer wg.Done()
 			s.KeepGrowing(maxSize, requestChannel)
@@ -380,10 +385,10 @@ func (initialShape *Shape) KeepGrowing(maxSize int, returnChannel chan Shapes) {
 	close(requestChannel)
 
 	for m := range requestChannel {
-		result.Merge(&m)
+		result.Merge(m)
 	}
 
-	returnChannel <- *result
+	returnChannel <- result
 }
 
 func (s *Shape) String() string {

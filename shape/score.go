@@ -12,7 +12,7 @@ type Score [MAX_NUMBER_OF_CUBES]uint64
 
 func NewScore(s *Shape) *Score {
 	result := &Score{}
-	size := s.Size()
+	size := int(s.Size())
 	sizeSquared := size * size
 
 	index := 0

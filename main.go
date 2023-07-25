@@ -18,28 +18,29 @@ func main() {
 	flag.StringVar(&imagePath, "i", "", "Path were images should be written, existing images will be overwritten. If not specified no images will be generated")
 	flag.Parse()
 
-	var shapes *Shapes
+	var shapes Shapes
 	var err error
 	if shapes, err = store.ReadText(fileName); err != nil {
-		shapes = NewShapes()
-		shapes.Add(NewShape())
+		shapes = NewShapesMap()
+		shapes.Add(*NewShape())
 	}
 
 	currentMaxSize := shapes.MaxSize()
 
 	wg := sync.WaitGroup{}
-	wg.Add(shapes.NumberOfShapesWithSize(currentMaxSize))
-	c := make(chan Shapes, shapes.NumberOfShapesWithSize(currentMaxSize))
-	for _, shape := range shapes.GetAllWithSize(currentMaxSize) {
+	currentShapes := shapes.GetAllWithSize(currentMaxSize)
+	wg.Add(len(currentShapes))
+	c := make(chan Shapes, len(currentShapes))
+	for _, shape := range currentShapes {
 		go func(shape *Shape) {
-			shape.KeepGrowing(maxSize, c)
+			shape.KeepGrowing(ShapeSize(maxSize), c)
 			wg.Done()
 		}(shape)
 	}
 	wg.Wait()
 	close(c)
 	for s := range c {
-		shapes.Merge(&s)
+		shapes.Merge(s)
 	}
 
 	if fileName != "" {
@@ -48,11 +49,11 @@ func main() {
 
 	if imagePath != "" {
 		wg = sync.WaitGroup{}
-		for size := 1; size <= maxSize; size++ {
+		for size := ShapeSize(1); size <= ShapeSize(maxSize); size++ {
 			counter := 1
 			for _, shape := range shapes.GetAllWithSize(size) {
 				wg.Add(1)
-				go func(shape *Shape, size, counter int) {
+				go func(shape *Shape, size ShapeSize, counter int) {
 					store.WriteImage(shape, 1024, 1024, fmt.Sprintf("%s/shape_%02d_%015d.png", imagePath, size, counter), 0.85)
 					wg.Done()
 				}(shape, size, counter)
@@ -61,4 +62,6 @@ func main() {
 		}
 		wg.Wait()
 	}
+
+	fmt.Printf("Found %d shapes with size %d\n", len(shapes.GetAllWithSize(ShapeSize(maxSize))), maxSize)
 }
