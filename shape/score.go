@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	MAX_NUMBER_OF_CUBES = 17
+	MAX_NUMBER_OF_CUBES = ShapeSize(17)
 )
 
 type Score [MAX_NUMBER_OF_CUBES]uint64
@@ -40,7 +40,7 @@ func (s *Score) Swap(i, j int) {
 
 // Compare s to other, return -1 if left is smaller than right, 0 if left is equal to right and 1 if left is bigger than right
 func (left Score) Cmp(right Score) int {
-	for index := 0; index < MAX_NUMBER_OF_CUBES; index++ {
+	for index := ShapeSize(0); index < MAX_NUMBER_OF_CUBES; index++ {
 		if left[index] < right[index] {
 			return -1
 		}

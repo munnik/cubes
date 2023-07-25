@@ -22,26 +22,25 @@ func WriteText(s Shapes, path string) {
 	}
 }
 
-func ReadText(path string) (Shapes, error) {
+func ReadText(path string, shapes Shapes) (Shapes, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	result := NewShapesMap()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		shape, err := ShapeFromString(scanner.Text())
 		if err != nil {
 			return nil, err
 		}
-		result.Add(*shape)
+		shapes.Add(*shape)
 	}
 
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
-	return result, nil
+	return shapes, nil
 }

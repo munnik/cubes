@@ -13,6 +13,7 @@ type Shape struct {
 	coords            map[Coord]struct{}
 	allPositiveCoords bool
 	score             *Score
+	newShapes         func() Shapes
 }
 
 type ShapeSize int
@@ -22,30 +23,35 @@ type BoundingBox struct {
 	Max Coord
 }
 
-func NewShape() *Shape {
+func NewShape(newShapes func() Shapes) *Shape {
 	return &Shape{
-		coords: map[Coord]struct{}{{0, 0, 0}: {}},
+		coords:    map[Coord]struct{}{{0, 0, 0}: {}},
+		newShapes: newShapes,
 	}
+}
+
+func (s *Shape) SetNewShapesMethod(newShapes func() Shapes) {
+	s.newShapes = newShapes
 }
 
 // Size is the number of cubes in the collection.
 func (s *Shape) Size() ShapeSize { return (ShapeSize)(len(s.coords)) }
 
-func (s *Shape) AddCube(c *Coord) (*Shape, error) {
-	if _, ok := s.coords[*c]; ok {
-		return nil, fmt.Errorf("coord %v is already in this shape", c)
+func (s *Shape) AddCube(newCoord *Coord) (*Shape, error) {
+	if _, ok := s.coords[*newCoord]; ok {
+		return nil, fmt.Errorf("coord %v is already in this shape", newCoord)
 	}
 
-	if !s.IsNeighbor(c) {
-		return nil, fmt.Errorf("coord %v is not a neighbor of this shape", c)
+	if !s.IsNeighbor(newCoord) {
+		return nil, fmt.Errorf("coord %v is not a neighbor of this shape", newCoord)
 	}
 
-	result := NewShape()
+	result := NewShape(s.newShapes)
 	result.coords = make(map[Coord]struct{}, s.Size()+1)
 	for c := range s.coords {
 		result.coords[c] = struct{}{}
 	}
-	result.coords[*c] = struct{}{}
+	result.coords[*newCoord] = struct{}{}
 
 	return result, nil
 }
@@ -74,7 +80,7 @@ func (s *Shape) Grow() Shapes {
 		delete(newCoords, c)
 	}
 
-	result := NewShapesMap()
+	result := s.newShapes()
 	numberOfNewShapes := len(newCoords)
 	channel := make(chan *Shape, numberOfNewShapes)
 	wg := sync.WaitGroup{}
@@ -162,7 +168,7 @@ func (s *Shape) LongestStraight() int {
 }
 
 func (s *Shape) Transform(f func(Coord, Axis) (*Coord, error), axis Axis) (*Shape, error) {
-	result := NewShape()
+	result := NewShape(s.newShapes)
 	result.coords = make(map[Coord]struct{}, s.Size())
 
 	for c := range s.coords {
@@ -248,7 +254,7 @@ func (s *Shape) AllPositiveCoords() *Shape {
 
 	min := s.BoundingBox().Min
 
-	result := NewShape()
+	result := NewShape(s.newShapes)
 	result.coords = make(map[Coord]struct{}, s.Size())
 
 	for c := range s.coords {
@@ -411,7 +417,7 @@ func (initialShape *Shape) KeepGrowing(maxSize ShapeSize, returnChannel chan Sha
 	}
 
 	smallestScoreShape := initialShape.WithSmallestScore()
-	result := NewShapesMap()
+	result := initialShape.newShapes()
 	result.Add(*smallestScoreShape)
 
 	grown := initialShape.Grow().GetAllWithSize(initialShape.Size() + 1)

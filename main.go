@@ -13,16 +13,30 @@ func main() {
 	var maxSize int
 	var fileName string
 	var imagePath string
+	var method string
 	flag.IntVar(&maxSize, "n", 1, "Specify the maximum number of cubes a polycube can consist of. All unique polycubes from 1 to n cubes are calculated.")
 	flag.StringVar(&fileName, "f", "", "File name to read existing polycubes from, new polycubes are written to this file. If no file name is specified no file is used to read from or write to.")
 	flag.StringVar(&imagePath, "i", "", "Path were images should be written, existing images will be overwritten. If not specified no images will be generated")
+	flag.StringVar(&method, "m", "DefaultMap", "Method to use to create a set of all the shapes created. Options are DefaultMap and LongestStraight.")
 	flag.Parse()
 
+	var NewShapes func() Shapes
+	if method == "DefaultMap" {
+		NewShapes = NewShapesDefaultMap
+	} else if method == "LongestStraight" {
+		NewShapes = NewShapesLongestStraightMap
+	} else {
+		panic("Unknown method specified")
+	}
+
 	var shapes Shapes
+	shapes = NewShapes()
 	var err error
-	if shapes, err = store.ReadText(fileName); err != nil {
-		shapes = NewShapesMap()
-		shapes.Add(*NewShape())
+	if shapes, err = store.ReadText(fileName, shapes); err != nil {
+		shapes = NewShapes()
+	}
+	if shapes.Len() == 0 {
+		shapes.Add(*NewShape(NewShapes))
 	}
 
 	currentMaxSize := shapes.MaxSize()
@@ -32,6 +46,7 @@ func main() {
 	wg.Add(len(currentShapes))
 	c := make(chan Shapes, len(currentShapes))
 	for _, shape := range currentShapes {
+		shape.SetNewShapesMethod(NewShapes)
 		go func(shape *Shape) {
 			shape.KeepGrowing(ShapeSize(maxSize), c)
 			wg.Done()
